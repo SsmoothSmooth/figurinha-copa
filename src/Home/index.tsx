@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
+import { Image, SafeAreaView, ScrollView, TextInput, View, TouchableOpacity, Text } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
 import { Camera, CameraType } from 'expo-camera';
-import { Image, SafeAreaView, ScrollView, TextInput, View } from 'react-native';
+import * as Sharing from 'expo-sharing';
 
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
@@ -15,10 +17,16 @@ export function Home() {
   const [positionSelected, setPositionSelected] = useState<PositionProps>(POSITIONS[0]);
 
   const cameraRef = useRef<Camera>(null);
+  const screenShotRef = useRef(null);
 
   async function handleTakePicture() {
     const photo = await cameraRef.current.takePictureAsync();
     setPhotoURI(photo.uri)
+  }
+
+  async function shareScreenShot(){
+    const screenshot = await captureRef(screenShotRef);
+    await Sharing.shareAsync("file://" + screenshot);
   }
 
   useEffect(() => {
@@ -29,7 +37,7 @@ export function Home() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View>
+        <View ref={screenShotRef} style={styles.sticker}>
           <Header position={positionSelected} />
 
           <View style={styles.picture}>
@@ -41,12 +49,16 @@ export function Home() {
                 style={styles.camera}
                 type={CameraType.front}
               /> : 
-              <Image source={{ uri: photo ? photo : 'https://filestore.community.support.microsoft.com/api/images/490b996b-e45f-4985-b2af-cf36da33849a?upload=true' }} style={styles.camera} />
+              <Image 
+                source={{ uri: photo ? photo : 'https://filestore.community.support.microsoft.com/api/images/490b996b-e45f-4985-b2af-cf36da33849a?upload=true' }} 
+                style={styles.camera} 
+                onLoad={shareScreenShot}
+              />
             }
 
             <View style={styles.player}>
               <TextInput
-                placeholder="Digite seu nome aqui"
+                placeholder=" Digite seu nome aqui "
                 style={styles.name}
               />
             </View>
@@ -57,6 +69,12 @@ export function Home() {
           onChangePosition={setPositionSelected}
           positionSelected={positionSelected}
         />
+
+        <TouchableOpacity onPress={() =>setPhotoURI(null)}>
+            <Text style={styles.retry}>
+              Nova Foto
+            </Text>
+        </TouchableOpacity>
 
         <Button title="Compartilhar" onPress={handleTakePicture}/>
       </ScrollView>
