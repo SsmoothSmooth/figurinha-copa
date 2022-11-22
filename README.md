@@ -6,6 +6,7 @@
 - Mobile
 - React Native
 - Expo
+oi
 
 ## Para Visualizar o projeto
 - Iniciar o servidor
